@@ -3,15 +3,24 @@ import {
   ApolloServerPluginDrainHttpServer,
   ApolloServerPluginLandingPageLocalDefault,
 } from 'apollo-server-core';
+import { makeExecutableSchema } from '@graphql-tools/schema';
 import express from 'express';
 import http from 'http';
+import typeDefs from './graphql/typedefs';
+import resolvers from './graphql/resolvers';
 
-async function main(typeDefs, resolvers) {
+async function main() {
   const app = express();
   const httpServer = http.createServer(app);
-  const server = new ApolloServer({
+
+  // we are going to create the schema here on outside here bcoz it will be used in two places both in apollo server and WebSocket server
+  const schema = makeExecutableSchema({
     typeDefs,
     resolvers,
+  });
+
+  const server = new ApolloServer({
+    schema,
     csrfPrevention: true,
     cache: 'bounded',
     plugins: [
